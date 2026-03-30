@@ -15,13 +15,19 @@ if "show_schedule" not in st.session_state:
     st.session_state.show_schedule = False
 
 # ── Owner setup ───────────────────────────────────────────────────────────────
-with st.expander("Owner Setup", expanded=st.session_state.owner is None):
+_existing = st.session_state.owner
+with st.expander("Owner Setup", expanded=_existing is None):
     with st.form("owner_form"):
-        owner_name = st.text_input("Owner name", value="Jordan")
-        contact    = st.text_input("Contact info (optional)")
+        owner_name = st.text_input("Owner name", value=_existing.name if _existing else "Jordan")
+        contact    = st.text_input("Contact info (optional)", value=_existing.contact_info if _existing else "")
         if st.form_submit_button("Save owner") and owner_name:
-            st.session_state.owner = Owner(name=owner_name, contact_info=contact)
-            st.session_state.show_schedule = False
+            if _existing:
+                # Edit in-place — keeps all pets and tasks
+                _existing.name = owner_name
+                _existing.contact_info = contact
+            else:
+                st.session_state.owner = Owner(name=owner_name, contact_info=contact)
+                st.session_state.show_schedule = False
             st.success(f"Owner '{owner_name}' saved!")
 
 if st.session_state.owner is None:
@@ -47,6 +53,36 @@ with st.form("pet_form"):
 
 if owner.pets:
     st.write("Pets: " + ", ".join(p.name for p in owner.pets))
+
+    with st.expander("Edit or delete a pet"):
+        pet_to_manage = st.selectbox(
+            "Select pet", [p.name for p in owner.pets], key="manage_pet_sel"
+        )
+        pet_obj = next(p for p in owner.pets if p.name == pet_to_manage)
+
+        # Edit
+        with st.form("edit_pet_form"):
+            ec1, ec2, ec3 = st.columns(3)
+            with ec1:
+                new_name    = st.text_input("Name",    value=pet_obj.name)
+            with ec2:
+                new_species = st.selectbox("Species", ["dog", "cat", "other"],
+                                           index=["dog", "cat", "other"].index(pet_obj.species))
+            with ec3:
+                new_age     = st.number_input("Age", min_value=0, max_value=30, value=pet_obj.age)
+            if st.form_submit_button("Save changes"):
+                pet_obj.name    = new_name
+                pet_obj.species = new_species
+                pet_obj.age     = int(new_age)
+                st.success(f"Updated pet to {new_name}!")
+
+        # Delete
+        st.markdown("---")
+        if st.button(f"Delete {pet_to_manage} (and all their tasks)", type="secondary"):
+            owner.remove_pet(pet_obj)
+            st.session_state.show_schedule = False
+            st.warning(f"{pet_to_manage} removed.")
+            st.rerun()
 else:
     st.info("No pets yet. Add one above.")
 

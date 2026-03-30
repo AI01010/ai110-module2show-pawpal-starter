@@ -63,6 +63,10 @@ class Owner:
         """Add a Pet to the owner's roster."""
         self.pets.append(pet)
 
+    def remove_pet(self, pet: Pet):
+        """Remove a Pet (and all its tasks) from the owner's roster."""
+        self.pets.remove(pet)
+
     def get_all_tasks(self) -> list[Task]:
         """Return a flat list of every task across all pets."""
         all_tasks = []
