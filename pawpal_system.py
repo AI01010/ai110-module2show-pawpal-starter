@@ -101,16 +101,27 @@ class Scheduler:
         return []
 
     def detect_conflicts(self) -> list[str]:
-        """Return warning strings for any two tasks scheduled at the same time."""
-        seen: dict[str, str] = {}   # time -> first task title
+        """Return warning strings for any two tasks at the same time, resolved by pet roster order."""
+        # pet_order maps pet name -> its index in owner.pets (lower = higher priority)
+        pet_order = {pet.name: i for i, pet in enumerate(self.owner.pets)}
+        seen: dict[str, tuple] = {}   # time -> (task, pet_name)
         warnings = []
-        for task in self.get_all_tasks():
+        for task, pet_name in self.get_tasks_with_pets():
             if task.time in seen:
+                prev_task, prev_pet = seen[task.time]
+                if pet_order[pet_name] < pet_order[prev_pet]:
+                    winner, winner_pet = task, pet_name
+                    loser,  loser_pet  = prev_task, prev_pet
+                    seen[task.time] = (task, pet_name)
+                else:
+                    winner, winner_pet = prev_task, prev_pet
+                    loser,  loser_pet  = task, pet_name
                 warnings.append(
-                    f"Conflict at {task.time}: '{seen[task.time]}' and '{task.title}'"
+                    f"Conflict at {task.time}: '{winner.title}' ({winner_pet}) takes priority "
+                    f"over '{loser.title}' ({loser_pet})"
                 )
             else:
-                seen[task.time] = task.title
+                seen[task.time] = (task, pet_name)
         return warnings
 
     def get_tasks_with_pets(self) -> list[tuple]:
