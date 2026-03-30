@@ -100,6 +100,4 @@ Tests cover:
 **Confidence level: ★★★★☆**
 The core scheduling behaviors are well-covered. Edge cases not yet tested: multiple pets with the same task time, tasks spanning midnight, or an owner with no pets.
 
-## 📸 Demo
 
-*(Screenshot to be added after final UI review)*
