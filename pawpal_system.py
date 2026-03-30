@@ -42,6 +42,10 @@ class Pet:
         """Append a Task to this pet's task list."""
         self.tasks.append(task)
 
+    def remove_task(self, task: Task):
+        """Remove a Task from this pet's task list."""
+        self.tasks.remove(task)
+
     def get_tasks(self) -> list:
         """Return all tasks assigned to this pet."""
         return self.tasks
@@ -104,6 +108,27 @@ class Scheduler:
             else:
                 seen[task.time] = task.title
         return warnings
+
+    def get_tasks_with_pets(self) -> list[tuple]:
+        """Return a list of (task, pet_name) sorted by task time."""
+        pairs = []
+        for pet in self.owner.pets:
+            for task in pet.get_tasks():
+                pairs.append((task, pet.name))
+        return sorted(pairs, key=lambda p: p[0].time)
+
+    def delete_task(self, task: Task):
+        """Remove a task from whichever pet owns it."""
+        for pet in self.owner.pets:
+            if task in pet.tasks:
+                pet.remove_task(task)
+                return
+
+    def completion_progress(self) -> tuple[int, int]:
+        """Return (completed_count, total_count) across all tasks."""
+        all_tasks = self.get_all_tasks()
+        done = sum(1 for t in all_tasks if t.completed)
+        return done, len(all_tasks)
 
     def generate_schedule(self) -> list[Task]:
         """Return today's incomplete tasks sorted by time, with conflicts noted."""

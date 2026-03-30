@@ -24,22 +24,28 @@ Your final app should:
 
 - **Add multiple pets** — Each pet has its own task list (name, species, age)
 - **Schedule tasks** — Assign tasks to specific pets with a time, duration, priority, and frequency
-- **Sorted schedule** — Tasks are displayed in chronological order using `Scheduler.sort_by_time()`
-- **Conflict warnings** — If two tasks share the same time slot, the app surfaces a `st.warning()` message
-- **Recurring tasks** — Daily and weekly tasks automatically reschedule themselves when marked complete (via `timedelta`)
-- **Mark complete** — Tasks can be marked done from the UI; recurring tasks advance their due date automatically
-- **Filter by pet or status** — Backend supports filtering tasks by pet name or completion state
+- **Sorted schedule** — Tasks displayed in chronological order with Pet, Duration, Priority, Frequency, and Status columns
+- **Delete tasks** — Remove any task directly from the schedule view without leaving the page
+- **Mark complete** — Mark tasks done inline; the schedule stays open and updates in place
+- **Progress bar** — Shows X / N tasks completed across all pets at a glance
+- **Filters** — Filter the schedule by pet and by status (All / Pending / Completed), independently
+- **Conflict warnings** — If two tasks share the same time slot, a warning appears above the schedule
+- **Recurring tasks** — Daily and weekly tasks automatically reschedule when marked complete (via `timedelta`)
+- **Show / Hide schedule** — Toggle the schedule view without losing any data
 
 ## Smarter Scheduling
 
-The `Scheduler` class provides four algorithmic features:
+The `Scheduler` class provides the following algorithmic features:
 
 | Method | What it does |
 |--------|-------------|
 | `sort_by_time()` | Sorts all tasks by `HH:MM` string — lexicographic sort works correctly for zero-padded times |
+| `get_tasks_with_pets()` | Returns `(task, pet_name)` pairs sorted by time — used to populate the Pet column |
 | `filter_by_status(completed)` | Returns only complete or incomplete tasks |
 | `filter_by_pet(pet_name)` | Returns tasks for a single named pet |
 | `detect_conflicts()` | Scans all tasks for duplicate time slots and returns human-readable warning strings |
+| `delete_task(task)` | Finds which pet owns the task and removes it |
+| `completion_progress()` | Returns `(done, total)` used to drive the progress bar |
 
 Recurring task logic lives in `Task.mark_complete()`: calling it on a `daily` or `weekly` task resets `completed` to `False` and advances `due_date` by the appropriate `timedelta` — no separate scheduler pass needed.
 
